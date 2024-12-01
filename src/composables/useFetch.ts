@@ -1,13 +1,13 @@
 import { ref, type Ref } from 'vue'
 
 type useFetchReturn<T> = {
-  returnData: Ref<T | null>
+  data: Ref<T | null>
   error: Ref<unknown>
   isFetching: Readonly<Ref<boolean>>
 }
 
 export default function useFetch<T>(url: string): useFetchReturn<T> {
-  const returnData = ref<T | null>(null) as Ref<T | null>
+  const data = ref<T | null>(null) as Ref<T | null>
   const error = ref<unknown>(null)
   const isFetching = ref(false)
 
@@ -19,8 +19,8 @@ export default function useFetch<T>(url: string): useFetchReturn<T> {
       }
       return res.json()
     })
-    .then((data) => (returnData.value = data))
+    .then((res) => (data.value = res))
     .catch((err) => (error.value = err))
     .finally(() => (isFetching.value = false))
-  return { returnData, error, isFetching }
+  return { data, error, isFetching }
 }

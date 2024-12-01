@@ -1,6 +1,8 @@
 <template>
   <tr>
-    <td v-for="(value, i) in coinValues" :key="`${i}-${value}`">{{ value }}</td>
+    <td v-for="(value, i) in coinValues" :key="`${i}-${value}`">
+      {{ value }}
+    </td>
   </tr>
 </template>
 

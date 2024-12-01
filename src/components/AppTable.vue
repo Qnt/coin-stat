@@ -1,6 +1,11 @@
 <template>
   <table>
-    <AppTableHeader :titles="titles" :sort-and-filter-data="sortAndFilterData" @sort="sort" />
+    <AppTableHeader
+      :titles="titles"
+      :sort-and-filter-data="sortAndFilterData"
+      :cur-sort-title="curSortTitle"
+      @sort="sort"
+    />
     <tbody>
       <AppTableRow v-for="item in tableData" :key="item.id" :table-item="item" />
     </tbody>
@@ -13,22 +18,13 @@ import { computed, ref } from 'vue'
 import AppTableRow from './AppTableRow.vue'
 import type { sortAndFilter, Coin } from '@/types'
 
-type TableProps = {
-  rawTableData: Coin[]
-}
-
-const { rawTableData } = defineProps<TableProps>()
-
+const { rawTableData } = defineProps<{ rawTableData: Coin[] }>()
 const sortAndFilterData = ref<sortAndFilter>({})
 const curSortTitle = ref<keyof Coin | null>(null)
 
 const titles = computed(() => {
   return Object.keys(rawTableData[0]) as Array<keyof Coin>
 })
-
-function sort(title: keyof Coin) {
-  curSortTitle.value = title
-}
 
 const tableData = computed(() => {
   return [...rawTableData].sort((a, b) => {
@@ -40,15 +36,25 @@ const tableData = computed(() => {
     const bValue = b[curSortTitle.value]
 
     if (typeof aValue === 'number' && typeof bValue === 'number') {
-      return aValue - bValue
+      return sortAndFilterData.value[curSortTitle.value]?.isAsc ? aValue - bValue : bValue - aValue
     }
     if (typeof aValue === 'string' && typeof bValue === 'string') {
-      return aValue.localeCompare(bValue)
+      return sortAndFilterData.value[curSortTitle.value]?.isAsc
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue)
     }
 
     return 0
   })
 })
+
+function sort(title: keyof Coin) {
+  curSortTitle.value = title
+  sortAndFilterData.value[curSortTitle.value] = {
+    ...sortAndFilterData.value[curSortTitle.value],
+    isAsc: !sortAndFilterData.value[curSortTitle.value]?.isAsc,
+  }
+}
 </script>
 
 <style scoped>

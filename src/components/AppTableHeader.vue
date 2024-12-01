@@ -6,34 +6,45 @@
         :key="`${title}-${i}`"
         @click="$emit('sort', title)"
       >
-        {{ title }}
-        {{ isAsc ? 'Asc' : '' }}
+        <div>{{ title }}</div>
+        <div v-if="title === curSortTitle">
+          {{ getSortFlagText(isAsc) }}
+        </div>
       </th>
     </tr>
   </thead>
 </template>
 
 <script setup lang="ts">
-import type { Coin, sortAndFilter } from '@/types'
-import { computed } from 'vue'
+import type { Coin, Header, sortAndFilter } from '@/types'
+import { computed, type ComputedRef } from 'vue'
 
 const { titles, sortAndFilterData } = defineProps<{
-  titles: Array<keyof Coin>
+  titles: (keyof Coin)[]
   sortAndFilterData: sortAndFilter
+  curSortTitle: keyof Coin | null
 }>()
 defineEmits<{
   sort: [title: keyof Coin]
 }>()
 
-const headerData = computed(() => {
+const headerData: ComputedRef<Header<keyof Coin>[]> = computed(() => {
   return titles.map((t) => {
+    const { isAsc, filterPattern } = sortAndFilterData[t] ?? {}
     return {
       title: t,
-      isAsc: sortAndFilterData[t]?.isAsc,
-      filterPattern: sortAndFilterData[t]?.filterPattern,
+      ...(isAsc !== undefined && { isAsc }),
+      ...(filterPattern && { filterPattern }),
     }
   })
 })
+
+function getSortFlagText(isAsc?: boolean) {
+  if (isAsc === undefined) {
+    return ''
+  }
+  return isAsc ? 'Asc' : 'Desc'
+}
 </script>
 
 <style scoped>

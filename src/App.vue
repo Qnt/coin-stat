@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { ref, toValue } from 'vue'
-import useFetch from './composables/useFetch'
-import { type ApiResponse } from './types'
 import AppTable from './components/AppTable.vue'
+import { useCoins } from './composables/useCoins'
+import { type Coin } from './types'
 
 const url = ref(import.meta.env.VITE_API_URL)
 
-const { returnData, error, isFetching } = useFetch<ApiResponse>(toValue(url))
+const { data, error, isFetching } = useCoins(toValue(url))
 </script>
 
 <template>
-  <div v-if="!returnData?.data.length">NO DATA</div>
-  <AppTable v-else :raw-table-data="returnData.data" />
+  <div v-if="!data">NO DATA</div>
+  <AppTable v-else :raw-table-data="data as Coin[]" />
 </template>
 
 <style scoped></style>
