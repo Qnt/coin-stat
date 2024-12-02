@@ -1,14 +1,15 @@
 <template>
   <thead>
     <tr>
-      <th
-        v-for="({ title, isAsc }, i) in headerData"
-        :key="`${title}-${i}`"
-        @click="$emit('sort', title)"
-      >
-        <div>{{ title }}</div>
+      <th v-for="({ title, isFilterable }, i) in headerData" :key="`${title}-${i}`">
+        <div @click="$emit('sort', title)">{{ title }}</div>
+        <input
+          v-if="isFilterable"
+          v-model.trim="sortAndFilterData[title].filterPattern"
+          placeholder="filter"
+        />
         <div v-if="title === curSortTitle">
-          {{ getSortFlagText(isAsc) }}
+          {{ getSortFlagText(sortAndFilterData[title]?.isAsc) }}
         </div>
       </th>
     </tr>
@@ -16,27 +17,37 @@
 </template>
 
 <script setup lang="ts">
-import type { Coin, Header, sortAndFilter } from '@/types'
-import { computed, type ComputedRef } from 'vue'
+import type { Coin, Header, SortAndFilter } from '@/types'
 
-const { titles, sortAndFilterData } = defineProps<{
-  titles: (keyof Coin)[]
-  sortAndFilterData: sortAndFilter
+defineProps<{
+  headerData: Header<keyof Coin>[]
   curSortTitle: keyof Coin | null
 }>()
 defineEmits<{
   sort: [title: keyof Coin]
 }>()
 
-const headerData: ComputedRef<Header<keyof Coin>[]> = computed(() => {
-  return titles.map((t) => {
-    const { isAsc, filterPattern } = sortAndFilterData[t] ?? {}
-    return {
-      title: t,
-      ...(isAsc !== undefined && { isAsc }),
-      ...(filterPattern && { filterPattern }),
+// TODO: lowercase modifier
+const [sortAndFilterData, modelModifiers] = defineModel<SortAndFilter, 'lowercase'>({
+  required: true,
+  set(value) {
+    if (modelModifiers.lowercase) {
+      const normalized = {} as SortAndFilter
+      Object.keys(value).forEach((key) => {
+        const typedKey = key as keyof SortAndFilter
+        if (value[typedKey]?.filterPattern) {
+          normalized[typedKey] = {
+            ...value[typedKey],
+            filterPattern: value[typedKey].filterPattern?.toLowerCase(),
+          }
+        } else {
+          normalized[typedKey] = value[typedKey]
+        }
+      })
+      return normalized
     }
-  })
+    return value
+  },
 })
 
 function getSortFlagText(isAsc?: boolean) {

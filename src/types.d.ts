@@ -16,31 +16,13 @@ export type Coin = {
   tsupply: number
   msupply: number
 }
-// export type Coin = {
-//   id: string
-//   symbol: string
-//   name: string
-//   nameid: string
-//   rank: number
-//   price_usd: string
-//   percent_change_24h: string
-//   percent_change_1h: string
-//   percent_change_7d: string
-//   price_btc: string
-//   market_cap_usd: string
-//   volume24: number
-//   volume24a: number
-//   csupply: string
-//   tsupply: string
-//   msupply: string
-// }
 
 export type ApiResponse = {
   data: Coin[]
 }
 
-export type sortAndFilter = {
-  [K in keyof Coin]?: {
+export type SortAndFilter = {
+  [K in keyof Coin]: {
     isAsc?: boolean
     filterPattern?: string
   }
@@ -48,6 +30,5 @@ export type sortAndFilter = {
 
 export type Header<T> = {
   title: T
-  isAsc?: boolean
-  filterPattern?: string
+  isFilterable: boolean
 }

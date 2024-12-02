@@ -6,7 +6,7 @@ import { type Coin } from './types'
 
 const url = ref(import.meta.env.VITE_API_URL)
 
-const { data, error, isFetching } = useCoins(toValue(url))
+const { data } = useCoins(toValue(url))
 </script>
 
 <template>

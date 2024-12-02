@@ -1,9 +1,10 @@
 <template>
   <table>
     <AppTableHeader
-      :titles="titles"
+      :header-data="headerData"
       :sort-and-filter-data="sortAndFilterData"
       :cur-sort-title="curSortTitle"
+      v-model.lowercase="sortAndFilterData"
       @sort="sort"
     />
     <tbody>
@@ -13,21 +14,34 @@
 </template>
 
 <script setup lang="ts">
+import type { Coin, Header, SortAndFilter } from '@/types'
+import { computed, ref, type Ref } from 'vue'
 import AppTableHeader from './AppTableHeader.vue'
-import { computed, ref } from 'vue'
 import AppTableRow from './AppTableRow.vue'
-import type { sortAndFilter, Coin } from '@/types'
 
 const { rawTableData } = defineProps<{ rawTableData: Coin[] }>()
-const sortAndFilterData = ref<sortAndFilter>({})
 const curSortTitle = ref<keyof Coin | null>(null)
 
-const titles = computed(() => {
-  return Object.keys(rawTableData[0]) as Array<keyof Coin>
+const sortAndFilterData: Ref<SortAndFilter> = ref(
+  Object.keys(rawTableData[0] || {}).reduce((acc, key) => {
+    acc[key as keyof Coin] = {}
+    return acc
+  }, {} as SortAndFilter),
+)
+
+const headerData = computed(() => {
+  const titles = Object.keys(rawTableData[0]) as Array<keyof Coin>
+
+  return titles.map((title) => {
+    return {
+      title,
+      isFilterable: typeof rawTableData[0][title] === 'string',
+    }
+  }) as Header<keyof Coin>[]
 })
 
 const tableData = computed(() => {
-  return [...rawTableData].sort((a, b) => {
+  const sortedTableData = [...rawTableData].sort((a, b) => {
     if (!curSortTitle.value) {
       return 0
     }
@@ -45,6 +59,20 @@ const tableData = computed(() => {
     }
 
     return 0
+  })
+
+  const filterTitles = Object.keys(sortAndFilterData.value).filter(
+    (key) => sortAndFilterData.value[key as keyof Coin].filterPattern,
+  ) as Array<keyof Coin>
+
+  return sortedTableData.filter((coin) => {
+    for (const title of filterTitles as [keyof Coin]) {
+      const filterPattern = sortAndFilterData.value[title].filterPattern ?? ''
+      if (typeof coin[title] === 'string' && !coin[title].toLowerCase().includes(filterPattern)) {
+        return false
+      }
+    }
+    return true
   })
 })
 
