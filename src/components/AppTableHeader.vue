@@ -5,7 +5,8 @@
         <div @click="$emit('sort', title)">{{ title }}</div>
         <input
           v-if="isFilterable"
-          v-model.trim="sortAndFilterData[title].filterPattern"
+          :value="sortAndFilterData[title].filterPattern"
+          @input="updateFilterPattern(title, ($event.target as HTMLInputElement).value)"
           placeholder="filter"
         />
         <div v-if="title === curSortTitle">
@@ -27,28 +28,17 @@ defineEmits<{
   sort: [title: keyof Coin]
 }>()
 
-// TODO: lowercase modifier
-const [sortAndFilterData, modelModifiers] = defineModel<SortAndFilter, 'lowercase'>({
+const [sortAndFilterData, modifiers] = defineModel<SortAndFilter, 'lowercase'>({
   required: true,
-  set(value) {
-    if (modelModifiers.lowercase) {
-      const normalized = {} as SortAndFilter
-      Object.keys(value).forEach((key) => {
-        const typedKey = key as keyof SortAndFilter
-        if (value[typedKey]?.filterPattern) {
-          normalized[typedKey] = {
-            ...value[typedKey],
-            filterPattern: value[typedKey].filterPattern?.toLowerCase(),
-          }
-        } else {
-          normalized[typedKey] = value[typedKey]
-        }
-      })
-      return normalized
-    }
-    return value
-  },
 })
+
+function updateFilterPattern(title: keyof Coin, pattern: string) {
+  if (modifiers.lowercase) {
+    sortAndFilterData.value[title].filterPattern = pattern.toLocaleLowerCase()
+  } else {
+    sortAndFilterData.value[title].filterPattern = pattern
+  }
+}
 
 function getSortFlagText(isAsc?: boolean) {
   if (isAsc === undefined) {
