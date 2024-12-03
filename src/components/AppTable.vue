@@ -1,10 +1,10 @@
 <template>
   <table>
     <AppTableHeader
+      v-model.lowercase="sortAndFilterData"
       :header-data="headerData"
       :sort-and-filter-data="sortAndFilterData"
       :cur-sort-title="curSortTitle"
-      v-model.lowercase="sortAndFilterData"
       @sort="sort"
     />
     <tbody>

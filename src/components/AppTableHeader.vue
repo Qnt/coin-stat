@@ -6,8 +6,8 @@
         <input
           v-if="isFilterable"
           :value="sortAndFilterData[title].filterPattern"
-          @input="updateFilterPattern(title, ($event.target as HTMLInputElement).value)"
           placeholder="filter"
+          @input="updateFilterPattern(title, ($event.target as HTMLInputElement).value)"
         />
         <div v-if="title === curSortTitle">
           {{ getSortFlagText(sortAndFilterData[title]?.isAsc) }}
